@@ -14,21 +14,32 @@
     "sketch-assets-file": "sketch-assets/icons.sketch"
   },
   "scripts": {
-    "build": "skpm-build",
-    "watch": "skpm-build --watch",
+    "build": "npm run typescript:once && skpm-build",
+    "watch": "skpm-build --watch & npm run typescript",
     "start": "skpm-build --watch",
-    "postinstall": "npm run build && skpm-link"
+    "postinstall": "npm run build && skpm-link",
+    "typescript": "tsc --watch",
+    "typescript:once": "tsc"
   },
   "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-export-default-from": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
+    "@babel/preset-typescript": "^7.8.3",
     "@skpm/builder": "^0.7.4",
     "@skpm/extract-loader": "^2.0.2",
     "css-loader": "^3.2.0",
-    "html-loader": "^0.5.5"
+    "html-loader": "^0.5.5",
+    "tslint": "^6.0.0",
+    "tslint-immutable": "^6.0.1",
+    "typescript": "^3.7.5"
   },
   "resources": [
     "resources/**/*.js"
   ],
   "dependencies": {
+    "pixi.js": "^5.2.1",
     "sketch-module-web-view": "^3.1.4"
   }
 }

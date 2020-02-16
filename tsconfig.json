@@ -1,0 +1,29 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+    "module": "commonjs",
+    "allowJs": true,
+    "strict": true,
+    "outDir": "./",
+    "rootDir": "./ts",
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+	},
+	"include": [
+    "./ts/**/*",
+  ],
+  "exclude": [
+    "./assets",
+    "./sketch-webgl.sketchplugin",
+    "./node_modules",
+    "./sketch_assets",
+    "./.babelrc",
+    "./.gitignore",
+    "./package-lock.json",
+    "./package.json",
+    "./tsconfig.json",
+    "./tslint.json",
+    "./webpack.skpm.config.js"
+  ]
+}

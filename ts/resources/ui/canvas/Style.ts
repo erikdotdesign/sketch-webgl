@@ -314,7 +314,6 @@ interface RenderFillColorOptions {
 export const renderFillColor = ({ layer, fill, fillIndex, container }: RenderFillColorOptions): Promise<PIXI.Container> => {
   return new Promise((resolve, reject) => {
     const fillColor = new PIXI.Graphics();
-    fillColor.blendMode = PIXI.BLEND_MODES.MULTIPLY;
     fillColor.name = `fill-${fillIndex}`;
     const fillStyles = colorToFill(fill.color);
     fillColor.beginFill(fillStyles.color, fillStyles.alpha);

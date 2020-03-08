@@ -1,7 +1,8 @@
 {
 	"compilerOptions": {
-		"target": "es6",
-    "module": "commonjs",
+		"target": "es2015",
+    "module": "es2015",
+    "jsx": "react",
     "allowJs": true,
     "strict": true,
     "outDir": "./",
@@ -14,6 +15,7 @@
     "./ts/**/*",
   ],
   "exclude": [
+    "./ts/types/**/*",
     "./assets",
     "./sketch-webgl.sketchplugin",
     "./node_modules",

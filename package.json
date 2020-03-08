@@ -14,12 +14,15 @@
     "sketch-assets-file": "sketch-assets/icons.sketch"
   },
   "scripts": {
-    "build": "npm run typescript:once && skpm-build",
-    "watch": "skpm-build --watch & npm run typescript",
+    "build": "npm run typescript:once && npm run sass:once && skpm-build",
+    "watch": "skpm-build --watch & npm run typescript & npm run sass",
     "start": "skpm-build --watch",
     "postinstall": "npm run build && skpm-link",
     "typescript": "tsc --watch",
-    "typescript:once": "tsc"
+    "typescript:once": "tsc",
+    "typescript:clean": "rm -rf ./.ts-compiled",
+    "sass:once": "sass --no-source-map styles/index.sass:resources/ui/style.css",
+    "sass": "sass --watch --no-source-map styles/index.sass:resources/ui/style.css"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
@@ -29,6 +32,9 @@
     "@babel/preset-typescript": "^7.8.3",
     "@skpm/builder": "^0.7.4",
     "@skpm/extract-loader": "^2.0.2",
+    "@types/chroma-js": "^2.0.0",
+    "@types/react": "^16.9.23",
+    "@types/react-dom": "^16.9.5",
     "css-loader": "^3.2.0",
     "html-loader": "^0.5.5",
     "tslint": "^6.0.0",
@@ -39,7 +45,11 @@
     "resources/**/*.js"
   ],
   "dependencies": {
+    "chroma-js": "^2.1.0",
+    "pixi-filters": "^3.1.0",
     "pixi.js": "^5.2.1",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
     "sketch-module-web-view": "^3.1.4"
   }
 }

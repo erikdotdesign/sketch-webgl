@@ -3,9 +3,9 @@
   "bundleVersion": 1,
   "commands": [
     {
-      "name": "my-command",
-      "identifier": "sketch-webgl.my-command-identifier",
-      "script": "./my-command.js",
+      "name": "render",
+      "identifier": "sketch-webgl.render",
+      "script": "./render.js",
       "handlers": {
         "run": "onRun",
         "actions": {
@@ -17,7 +17,7 @@
   "menu": {
     "title": "sketch-webgl",
     "items": [
-      "sketch-webgl.my-command-identifier"
+      "sketch-webgl.render"
     ]
   }
 }

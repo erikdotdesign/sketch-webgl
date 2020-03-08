@@ -20,7 +20,27 @@ const renderApp = ({ theme }: RenderAppOptions): Promise<PIXI.Application> => {
       resolution: window.devicePixelRatio || 1
     });
     app.view.addEventListener('mousewheel', (ev: any) => {
-      app.stage.emit('scroll', ev);
+      if (ev.ctrlKey) {
+        const canvas = app.stage.getChildByName('canvas') as PIXI.Container;
+        ev.preventDefault();
+        let nextZoom = gestureZoom - ev.deltaY * 0.01;
+        let ratio = 1 - nextZoom / gestureZoom;
+        if (ev.deltaY < 0 && nextZoom < 5) {
+          gestureZoom -= ev.deltaY * 0.01;
+          canvas.position.x += (ev.clientX - canvas.position.x) * ratio;
+          canvas.position.y += (ev.clientY - canvas.position.y) * ratio;
+          canvas.scale.x = gestureZoom;
+          canvas.scale.y = gestureZoom;
+        } else if (ev.deltaY > 0 && nextZoom > 0) {
+          gestureZoom -= ev.deltaY * 0.01;
+          canvas.position.x += (ev.clientX - canvas.position.x) * ratio;
+          canvas.position.y += (ev.clientY - canvas.position.y) * ratio;
+          canvas.scale.x = gestureZoom;
+          canvas.scale.y = gestureZoom;
+        }
+      } else {
+        app.stage.emit('scroll', ev);
+      }
     });
     app.view.addEventListener('gesturestart', (ev: any) => {
       app.stage.emit('gesturestart', ev);

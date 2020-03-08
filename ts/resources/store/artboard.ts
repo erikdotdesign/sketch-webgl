@@ -244,14 +244,9 @@ const processLayer = ({ layer, sketch, page }: ProcessLayerOptions): Promise<srm
       });
     })
     .then((layerS7) => {
-      return roundFrameDimensions({
-        layer: layerS7 as srm.RelevantLayer | null
-      });
-    })
-    .then((layerS8) => {
-      if (layerS8 && layerS8.type === 'Group') {
+      if (layerS7 && layerS7.type === 'Group') {
         processLayers({
-          layers: (layerS8 as srm.Group).layers,
+          layers: (layerS7 as srm.Group).layers,
           sketch: sketch,
           page: page
         })

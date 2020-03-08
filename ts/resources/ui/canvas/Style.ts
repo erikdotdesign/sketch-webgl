@@ -206,7 +206,7 @@ export const renderBorderGradient = ({ layer, border, borderIndex, resources, co
     let gradientTexture;
     if (layer.type === 'ShapePartial') {
       const baseTexture = new PIXI.BaseTexture(resources[`[border-${borderIndex}]${(layer as srm.ShapePartial).shape.id}` as any].url);
-      const frame = new PIXI.Rectangle(Math.round(layer.frame.x) - Math.round(layer.frame.width), Math.round(layer.frame.y) - Math.round(layer.frame.height), Math.round(layer.frame.width), Math.round(layer.frame.height));
+      const frame = new PIXI.Rectangle(layer.frame.x - layer.frame.width, layer.frame.y - layer.frame.height, layer.frame.width, layer.frame.height);
       gradientTexture = new PIXI.Texture(baseTexture, frame);
     } else {
       gradientTexture = PIXI.Texture.from(resources[`[border-${borderIndex}]${layer.id}` as any].url);
@@ -343,7 +343,7 @@ export const renderFillImage = ({ layer, fillIndex, resources, container }: Rend
     let fillTexture;
     if (layer.type === 'ShapePartial') {
       const baseTexture = new PIXI.BaseTexture(resources[`[fill-${fillIndex}]${(layer as srm.ShapePartial).shape.id}` as any].url);
-      const frame = new PIXI.Rectangle(Math.round(layer.frame.x), Math.round(layer.frame.y), Math.round(layer.frame.width), Math.round(layer.frame.height));
+      const frame = new PIXI.Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height);
       fillTexture = new PIXI.Texture(baseTexture, frame);
     } else {
       fillTexture = PIXI.Texture.from(resources[`[fill-${fillIndex}]${layer.id}` as any].url);

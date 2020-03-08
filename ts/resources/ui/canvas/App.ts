@@ -19,40 +19,40 @@ const renderApp = ({ theme }: RenderAppOptions): Promise<PIXI.Application> => {
       antialias: true,
       resolution: window.devicePixelRatio || 1
     });
-    app.view.addEventListener('mousewheel', (ev: any) => {
-      if (ev.ctrlKey) {
+    app.view.addEventListener('mousewheel', (e: any) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
         const canvas = app.stage.getChildByName('canvas') as PIXI.Container;
-        ev.preventDefault();
-        let nextZoom = gestureZoom - ev.deltaY * 0.01;
-        let ratio = 1 - nextZoom / gestureZoom;
-        if (ev.deltaY < 0 && nextZoom < 5) {
-          gestureZoom -= ev.deltaY * 0.01;
-          canvas.position.x += (ev.clientX - canvas.position.x) * ratio;
-          canvas.position.y += (ev.clientY - canvas.position.y) * ratio;
+        const nextZoom = gestureZoom - e.deltaY * 0.01;
+        const ratio = 1 - nextZoom / gestureZoom;
+        if (e.deltaY < 0 && nextZoom < 5) {
+          gestureZoom -= e.deltaY * 0.01;
+          canvas.position.x += (e.clientX - canvas.position.x) * ratio;
+          canvas.position.y += (e.clientY - canvas.position.y) * ratio;
           canvas.scale.x = gestureZoom;
           canvas.scale.y = gestureZoom;
-        } else if (ev.deltaY > 0 && nextZoom > 0) {
-          gestureZoom -= ev.deltaY * 0.01;
-          canvas.position.x += (ev.clientX - canvas.position.x) * ratio;
-          canvas.position.y += (ev.clientY - canvas.position.y) * ratio;
+        } else if (e.deltaY > 0 && nextZoom > 0) {
+          gestureZoom -= e.deltaY * 0.01;
+          canvas.position.x += (e.clientX - canvas.position.x) * ratio;
+          canvas.position.y += (e.clientY - canvas.position.y) * ratio;
           canvas.scale.x = gestureZoom;
           canvas.scale.y = gestureZoom;
         }
       } else {
-        app.stage.emit('scroll', ev);
+        app.stage.emit('scroll', e);
       }
     });
-    app.view.addEventListener('gesturestart', (ev: any) => {
-      app.stage.emit('gesturestart', ev);
+    app.view.addEventListener('gesturestart', (e: any) => {
+      app.stage.emit('gesturestart', e);
     });
-    app.view.addEventListener('gesturechange', (ev: any) => {
-      app.stage.emit('gesturechange', ev);
+    app.view.addEventListener('gesturechange', (e: any) => {
+      app.stage.emit('gesturechange', e);
     });
-    app.view.addEventListener('gestureend', (ev: any) => {
-      app.stage.emit('gestureend', ev);
+    app.view.addEventListener('gestureend', (e: any) => {
+      app.stage.emit('gestureend', e);
     });
-    app.view.addEventListener('InitialZoom', (ev: any) => {
-      app.stage.emit('InitialZoom', ev);
+    app.view.addEventListener('InitialZoom', (e: any) => {
+      app.stage.emit('InitialZoom', e);
     });
     app.stage.on('InitialZoom', (e: CustomEvent) => {
       const canvas = app.stage.getChildByName('canvas') as PIXI.Container;

@@ -3,6 +3,7 @@ sketch-webgl.sketchplugin
 
 resources/export
 resources/store
+resources/canvas
 resources/ui/components
 resources/ui/styles
 resources/ui/index.js

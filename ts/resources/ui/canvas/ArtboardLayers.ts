@@ -1,6 +1,22 @@
 import * as PIXI from 'pixi.js';
 import renderLayers from './Layers';
 
+interface RenderArtboardLayersMaskOptions {
+  sketchArtboard: srm.Artboard;
+  container: PIXI.Container;
+  artboardLayersMask: PIXI.Graphics;
+}
+
+const renderArtboardLayersMask = ({ sketchArtboard, artboardLayersMask, container }: RenderArtboardLayersMaskOptions): Promise<PIXI.Container> => {
+  return new Promise((resolve, reject) => {
+    artboardLayersMask.beginFill(0x000000);
+    artboardLayersMask.drawRect(0, 0, sketchArtboard.frame.width, sketchArtboard.frame.height);
+    artboardLayersMask.endFill();
+    container.addChild(artboardLayersMask);
+    resolve(container);
+  });
+};
+
 interface RenderArtboardLayersOptions {
   sketchArtboard: srm.Artboard;
   resources: PIXI.LoaderResource[];
@@ -19,10 +35,13 @@ const renderArtboardLayers = ({ sketchArtboard, resources, container }: RenderAr
       container: artboardLayers
     })
     .then(() => {
-      artboardLayersMask.beginFill(0x000000);
-      artboardLayersMask.drawRect(0,0,sketchArtboard.frame.width, sketchArtboard.frame.height);
-      artboardLayersMask.endFill();
-      artboardLayers.addChild(artboardLayersMask);
+      return renderArtboardLayersMask({
+        sketchArtboard: sketchArtboard,
+        artboardLayersMask: artboardLayersMask,
+        container: artboardLayers
+      });
+    })
+    .then(() => {
       artboardLayers.mask = artboardLayersMask;
       container.addChild(artboardLayers);
     })

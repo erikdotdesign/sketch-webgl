@@ -2,7 +2,6 @@ import * as PIXI from 'pixi.js';
 
 interface RenderCanvasOptions {
   app: PIXI.Application;
-  ruleSize: number;
 }
 
 const renderCanvas = ({ app }: RenderCanvasOptions): Promise<PIXI.Container> => {

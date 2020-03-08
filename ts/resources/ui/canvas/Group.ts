@@ -18,9 +18,7 @@ const renderGroup = ({layer, resources, groupShadows}: RenderGroupOptions): Prom
     const groupContainer = new PIXI.Container();
     const groupLayers = new PIXI.Container();
     groupContainer.name = layer.id;
-    //groupContainer.hitArea = new PIXI.Rectangle(0, 0, frame.width, frame.height);
     groupLayers.name = 'layers';
-    groupLayers.interactiveChildren = false;
     setBaseLayerContainer({
       layer: layer,
       container: groupContainer

@@ -10,9 +10,9 @@ interface RenderArtboardLayersOptions {
 const renderArtboardLayers = ({ sketchArtboard, resources, container }: RenderArtboardLayersOptions): Promise<PIXI.Container> => {
   return new Promise((resolve, reject) => {
     const artboardLayers = new PIXI.Container();
-    artboardLayers.name = `artboard-${sketchArtboard.id}-layers`;
+    artboardLayers.name = 'artboard-layers';
     const artboardLayersMask = new PIXI.Graphics();
-    artboardLayersMask.name = `artboard-${sketchArtboard.id}-layers-mask`;
+    artboardLayersMask.name = 'artboard-layers-mask';
     renderLayers({
       layers: sketchArtboard.layers as srm.RelevantLayer[],
       resources: resources,

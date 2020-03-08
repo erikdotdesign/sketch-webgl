@@ -30,7 +30,6 @@ const getInitialZoom = ({ app }: {app: PIXI.Application}): any => {
 
 const renderPixiCanvas = ({ sketchArtboard, base64Images, theme }: RenderPixiCanvasOptions): Promise<PIXI.Application> => {
   return new Promise((resolve, reject) => {
-    let ruleSize: number = 28;
     let app: PIXI.Application;
     let resources: PIXI.LoaderResource[];
     let canvas: PIXI.Container;
@@ -38,8 +37,7 @@ const renderPixiCanvas = ({ sketchArtboard, base64Images, theme }: RenderPixiCan
     console.log('rendering app');
     // render app
     renderApp({
-      theme: theme,
-      ruleSize: ruleSize
+      theme: theme
     })
     // load resources
     .then((appContainer) => {
@@ -55,8 +53,7 @@ const renderPixiCanvas = ({ sketchArtboard, base64Images, theme }: RenderPixiCan
       console.log('rendering canvas');
       resources = appResources;
       return renderCanvas({
-        app: app,
-        ruleSize: ruleSize
+        app: app
       });
     })
     // render artboard

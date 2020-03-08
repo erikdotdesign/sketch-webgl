@@ -31,7 +31,6 @@ export default (context) => {
     });
     // if artboard selected, run command
     if (selectedArtboard) {
-        var start = new Date().getTime();
         // set base store
         let store = null;
         // set theme
@@ -92,9 +91,6 @@ export default (context) => {
             })
                 // close loading window && open app window
                 .finally(() => {
-                var end = new Date().getTime();
-                var time = end - start;
-                console.log(time / 1000);
                 loadingWindow.close();
                 appWindow.show();
             });

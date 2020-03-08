@@ -23,12 +23,11 @@ const renderApp = ({ theme, ruleSize }: RenderAppOptions): Promise<PIXI.Applicat
       resolution: window.devicePixelRatio || 1
     });
     app.view.addEventListener('mousewheel', (ev: any) => {
-      //const page = app.stage.getChildByName('page') as PIXI.Container;
-      const rules = app.stage.getChildByName('rules') as PIXI.Container;
-      const ruleTop = rules.getChildByName('rule-top');
-      const ruleLeft = rules.getChildByName('rule-left');
-      ruleTop.emit('scroll', ev);
-      ruleLeft.emit('scroll', ev);
+      // const rules = app.stage.getChildByName('rules') as PIXI.Container;
+      // const ruleTop = rules.getChildByName('rule-top');
+      // const ruleLeft = rules.getChildByName('rule-left');
+      // ruleTop.emit('scroll', ev);
+      // ruleLeft.emit('scroll', ev);
       app.stage.emit('scroll', ev);
     });
     app.view.addEventListener('gesturestart', (ev: any) => {
@@ -40,28 +39,24 @@ const renderApp = ({ theme, ruleSize }: RenderAppOptions): Promise<PIXI.Applicat
     app.view.addEventListener('gestureend', (ev: any) => {
       app.stage.emit('gestureend', ev);
     });
-    app.view.addEventListener('Zoom', (ev: any) => {
-      //const page = app.stage.getChildByName('page') as PIXI.Container;
-      const rules = app.stage.getChildByName('rules') as PIXI.Container;
-      const ruleTop = rules.getChildByName('rule-top');
-      const ruleLeft = rules.getChildByName('rule-left');
-      //rules.emit('Zoom', ev);
-      ruleTop.emit('Zoom', ev);
-      ruleLeft.emit('Zoom', ev);
-    });
+    // app.view.addEventListener('Zoom', (ev: any) => {
+    //   const rules = app.stage.getChildByName('rules') as PIXI.Container;
+    //   const ruleTop = rules.getChildByName('rule-top');
+    //   const ruleLeft = rules.getChildByName('rule-left');
+    //   ruleTop.emit('Zoom', ev);
+    //   ruleLeft.emit('Zoom', ev);
+    // });
     app.view.addEventListener('InitialZoom', (ev: any) => {
       app.stage.emit('InitialZoom', ev);
     });
-    app.view.addEventListener('ZoomCenter', (ev: any) => {
-      //const page = app.stage.getChildByName('page') as PIXI.Container;
-      const rules = app.stage.getChildByName('rules') as PIXI.Container;
-      const ruleTop = rules.getChildByName('rule-top');
-      const ruleLeft = rules.getChildByName('rule-left');
-      ruleTop.emit('ZoomCenter', ev);
-      ruleLeft.emit('ZoomCenter', ev);
-    });
+    // app.view.addEventListener('ZoomCenter', (ev: any) => {
+    //   const rules = app.stage.getChildByName('rules') as PIXI.Container;
+    //   const ruleTop = rules.getChildByName('rule-top');
+    //   const ruleLeft = rules.getChildByName('rule-left');
+    //   ruleTop.emit('ZoomCenter', ev);
+    //   ruleLeft.emit('ZoomCenter', ev);
+    // });
     app.stage.on('InitialZoom', (e: CustomEvent) => {
-      //const page = app.stage.getChildByName('page') as PIXI.Container;
       const canvas = app.stage.getChildByName('canvas') as PIXI.Container;
       const appWidth = app.screen.width;
       const appHeight = app.screen.height;
@@ -74,21 +69,20 @@ const renderApp = ({ theme, ruleSize }: RenderAppOptions): Promise<PIXI.Applicat
       gestureZoom = e.detail.initialZoom;
       gestureZoomX = canvas.position.x;
       gestureZoomY = canvas.position.y;
-      const gestureZoomCenter = new CustomEvent('ZoomCenter', {
-        bubbles: true,
-        detail: {x: gestureZoomX, y: gestureZoomY}
-      });
-      const zoom = new CustomEvent('Zoom', {
-        bubbles: true,
-        detail: {
-          zoom: gestureZoom
-        }
-      });
-      app.view.dispatchEvent(zoom);
-      app.view.dispatchEvent(gestureZoomCenter);
+      // const gestureZoomCenter = new CustomEvent('ZoomCenter', {
+      //   bubbles: true,
+      //   detail: {x: gestureZoomX, y: gestureZoomY}
+      // });
+      // const zoom = new CustomEvent('Zoom', {
+      //   bubbles: true,
+      //   detail: {
+      //     zoom: gestureZoom
+      //   }
+      // });
+      // app.view.dispatchEvent(zoom);
+      // app.view.dispatchEvent(gestureZoomCenter);
     });
     app.stage.on('scroll', (e: any) => {
-      //const page = app.stage.getChildByName('page') as PIXI.Container;
       const canvas = app.stage.getChildByName('canvas') as PIXI.Container;
       canvas.position.x += e.wheelDeltaX;
       canvas.position.y += e.wheelDeltaY;
@@ -99,7 +93,6 @@ const renderApp = ({ theme, ruleSize }: RenderAppOptions): Promise<PIXI.Applicat
       startGestureZoom = gestureZoom;
     });
     app.stage.on('gesturechange', (e: any) => {
-      //const page = app.stage.getChildByName('page') as PIXI.Container;
       const canvas = app.stage.getChildByName('canvas') as PIXI.Container;
       const ratio = 1 - startGestureZoom * e.scale / gestureZoom;
       canvas.position.x += (e.clientX - canvas.position.x) * ratio;
@@ -109,22 +102,18 @@ const renderApp = ({ theme, ruleSize }: RenderAppOptions): Promise<PIXI.Applicat
       gestureZoom = startGestureZoom * e.scale;
       gestureZoomX = canvas.position.x;
       gestureZoomY = canvas.position.y;
-      const gestureZoomCenter = new CustomEvent('ZoomCenter', {
-        bubbles: true,
-        detail: {x: gestureZoomX, y: gestureZoomY}
-      });
-      const zoom = new CustomEvent('Zoom', {
-        bubbles: true,
-        detail: {
-          zoom: gestureZoom
-        }
-      });
-      app.view.dispatchEvent(zoom);
-      app.view.dispatchEvent(gestureZoomCenter);
-      // dispatch({
-      //   type: 'set-zoom',
-      //   zoom: startGestureZoom * e.scale
+      // const gestureZoomCenter = new CustomEvent('ZoomCenter', {
+      //   bubbles: true,
+      //   detail: {x: gestureZoomX, y: gestureZoomY}
       // });
+      // const zoom = new CustomEvent('Zoom', {
+      //   bubbles: true,
+      //   detail: {
+      //     zoom: gestureZoom
+      //   }
+      // });
+      // app.view.dispatchEvent(zoom);
+      // app.view.dispatchEvent(gestureZoomCenter);
     });
     resolve(app);
   });

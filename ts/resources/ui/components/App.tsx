@@ -6,7 +6,6 @@ interface AppProps {
   artboard: srm.Artboard;
   base64Images: srm.base64Image[];
   theme: srm.Theme;
-  composing: boolean;
 }
 
 const App = (props: AppProps) => {

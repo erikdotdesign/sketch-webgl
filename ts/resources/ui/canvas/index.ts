@@ -1,7 +1,6 @@
 import * as PIXI from 'pixi.js';
 import renderApp from './App';
 import loadResources from './Resources';
-import renderRules from './Rules';
 import renderCanvas from './Canvas';
 import renderArtboard from './Artboard';
 import renderArtboardLayers from './ArtboardLayers';
@@ -10,7 +9,6 @@ interface RenderPixiCanvasOptions {
   sketchArtboard: srm.Artboard;
   base64Images: srm.base64Image[],
   theme: any;
-  dispatch: any;
 }
 
 const getInitialZoom = ({ app }: {app: PIXI.Application}): any => {
@@ -30,14 +28,13 @@ const getInitialZoom = ({ app }: {app: PIXI.Application}): any => {
   })
 };
 
-const renderPixiCanvas = ({sketchArtboard, base64Images, theme, dispatch}: RenderPixiCanvasOptions): Promise<PIXI.Application> => {
+const renderPixiCanvas = ({ sketchArtboard, base64Images, theme }: RenderPixiCanvasOptions): Promise<PIXI.Application> => {
   return new Promise((resolve, reject) => {
     let ruleSize: number = 28;
     let app: PIXI.Application;
     let resources: PIXI.LoaderResource[];
     let canvas: PIXI.Container;
     let artboard: PIXI.Container;
-    let rules: PIXI.Container;
     console.log('rendering app');
     // render app
     renderApp({
@@ -81,20 +78,9 @@ const renderPixiCanvas = ({sketchArtboard, base64Images, theme, dispatch}: Rende
         container: artboard
       });
     })
-    // render rules
-    .then(() => {
-      console.log('rendering rules');
-      return renderRules({
-        app: app,
-        artboard: sketchArtboard,
-        theme: theme,
-        ruleSize: ruleSize
-      });
-    })
     // get initial zoom
-    .then((rulesContainer) => {
+    .then(() => {
       console.log('setting initial zoom');
-      rules = rulesContainer;
       return getInitialZoom({
         app: app
       });

@@ -22,8 +22,7 @@ const Canvas = () => {
     renderPixiCanvas({
       sketchArtboard: artboard as srm.Artboard,
       base64Images: base64Images,
-      theme: theme,
-      dispatch: dispatch
+      theme: theme
     })
     .then(app => {
       setPixiApp(app);
@@ -41,76 +40,3 @@ const Canvas = () => {
 }
 
 export default Canvas;
-
-// let startGestureZoom = 0;
-// let gestureZoom = 1;
-
-// {/* {
-//         ready
-//         ? <Artboard />
-//         : null
-//       }
-//       <div
-//         className='c-canvas__escape'
-//         onClick={handleClick}
-//         onMouseOver={handleMouseOver} /> */}
-
-// const handleClick = () => {
-  //   dispatch({
-  //     type: 'set-selection',
-  //     selection: null
-  //   });
-  // }
-  // const handleMouseOver = () => {
-  //   dispatch({
-  //     type: 'set-hover',
-  //     selection: null
-  //   });
-  // }
-  // const handleGestureStart = (e: any) => {
-  //   e.preventDefault();
-  //   dispatch({
-  //     type: 'set-gesturing',
-  //     gesturing: true
-  //   });
-  //   startGestureZoom = gestureZoom;
-  // }
-  // const handleGestureChange = (e: any) => {
-  //   e.preventDefault();
-  //   dispatch({
-  //     type: 'set-zoom',
-  //     zoom: startGestureZoom * e.scale
-  //   });
-  // }
-  // const handleGestureEnd = (e: any) => {
-  //   e.preventDefault();
-  //   dispatch({
-  //     type: 'set-gesturing',
-  //     gesturing: false
-  //   });
-  // }
-  // const handleWheel = (e: any) => {
-  //   if (e.ctrlKey) {
-  //     e.preventDefault();
-  //     let nextZoom = gestureZoom - e.deltaY * 0.01;
-  //     if (e.deltaY < 0 && nextZoom < 5) {
-  //       dispatch({
-  //         type: 'set-zoom',
-  //         zoom: gestureZoom -= e.deltaY * 0.01
-  //       });
-  //     } else if (e.deltaY > 0 && nextZoom > 0) {
-  //       dispatch({
-  //         type: 'set-zoom',
-  //         zoom: gestureZoom -= e.deltaY * 0.01
-  //       });
-  //     }
-  //   }
-  // }
-  // useEffect(() => {
-  //   canvas.current?.addEventListener('gesturestart', handleGestureStart);
-  //   canvas.current?.addEventListener('gesturechange', handleGestureChange);
-  //   canvas.current?.addEventListener('gestureend', handleGestureEnd);
-  // }, []);
-  // useEffect(() => {
-  //   gestureZoom = zoom;
-  // }, [zoom]);

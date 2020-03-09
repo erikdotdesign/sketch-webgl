@@ -1,15 +1,15 @@
 import * as PIXI from 'pixi.js';
 
-import {
-  setBaseLayerContainer,
-  renderGroupsShadows,
-  renderShadows,
-  renderFills,
-  renderInnerShadows,
-  renderBorders,
-  renderTransforms,
-  renderBlur
-} from './Style';
+import setLayerContainer from './style/layerContainer';
+import renderShadows from './style/shadows';
+import renderOpacity from './style/opacity';
+import renderBlendMode from './style/blendMode';
+import renderGroupsShadows from './style/groupShadows';
+import renderFills from './style/fills';
+import renderInnerShadows from './style/innerShadows';
+import renderBorders from './style/borders';
+import renderTransforms from './style/transforms';
+import renderBlur from './style/blur';
 
 interface RenderShapePathOptions {
   layer: srm.ShapePath;
@@ -20,12 +20,24 @@ interface RenderShapePathOptions {
 const renderShapePath = ({layer, resources, groupShadows}: RenderShapePathOptions): Promise<PIXI.Container> => {
   return new Promise((resolve, reject) => {
     const { style, transform } = layer;
-    const { fills, borders, shadows, innerShadows, blur } = style;
+    const { fills, borders, shadows, innerShadows, blur, blendingMode, opacity } = style;
     const shapePathContainer = new PIXI.Container();
     shapePathContainer.name = layer.id;
-    setBaseLayerContainer({
+    setLayerContainer({
       layer: layer,
       container: shapePathContainer
+    })
+    .then(() => {
+      return renderOpacity({
+        opacity: opacity,
+        container: shapePathContainer
+      });
+    })
+    .then(() => {
+      return renderBlendMode({
+        blendMode: blendingMode,
+        container: shapePathContainer
+      });
     })
     .then(() => {
       return renderGroupsShadows({

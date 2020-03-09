@@ -14,50 +14,42 @@ const renderLayer = ({ layer, resources, groupShadows }: RenderLayerOptions): Pr
   return new Promise((resolve, reject) => {
     switch(layer.type) {
       case 'ShapePath':
-        console.log('Rendering ShapePath');
         renderShapePath({
           layer: layer as srm.ShapePath,
           resources: resources,
           groupShadows: groupShadows
         })
         .then((shapePathContainer) => {
-          console.log('ShapePath Rendered');
           resolve(shapePathContainer);
         });
         break;
       case 'Shape':
-        console.log('Rendering Shape');
         renderShape({
           layer: layer as srm.Shape,
           resources: resources,
           groupShadows: groupShadows
         })
         .then((shapeContainer) => {
-          console.log('Shape Rendered');
           resolve(shapeContainer);
         });
         break;
       case 'Image':
-        console.log('Rendering Image');
         renderImage({
           layer: layer as srm.Image,
           resources: resources,
           groupShadows: groupShadows
         })
         .then((imageContainer) => {
-          console.log('Image Rendered');
           resolve(imageContainer);
         });
         break;
       case 'Group':
-        console.log('Rendering Group');
         renderGroup({
           layer: layer as srm.Group,
           resources: resources,
           groupShadows: groupShadows
         })
         .then((groupContainer) => {
-          console.log('Group Rendered');
           resolve(groupContainer);
         });
         break;

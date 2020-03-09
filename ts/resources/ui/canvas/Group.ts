@@ -1,7 +1,10 @@
 import * as PIXI from 'pixi.js';
 
 import renderLayers from './Layers';
-import { setBaseLayerContainer, renderTransforms } from './Style';
+import setLayerContainer from './style/layerContainer';
+import renderOpacity from './style/opacity';
+import renderBlendMode from './style/blendMode';
+import renderTransforms from './style/transforms';
 
 interface RenderGroupOptions {
   layer: srm.Group;
@@ -12,29 +15,38 @@ interface RenderGroupOptions {
 const renderGroup = ({layer, resources, groupShadows}: RenderGroupOptions): Promise<PIXI.Container> => {
   return new Promise((resolve, reject) => {
     const { name, transform, id, style } = layer;
-    const { shadows } = style;
+    const { shadows, opacity, blendingMode } = style;
     const layerShadows = { id, shadows };
     const compiledGroupShadows = groupShadows ? [...groupShadows, layerShadows] : [layerShadows];
     const groupContainer = new PIXI.Container();
-    const groupLayers = new PIXI.Container();
     groupContainer.name = layer.id;
-    groupLayers.name = 'layers';
-    setBaseLayerContainer({
+    setLayerContainer({
       layer: layer,
       container: groupContainer
+    })
+    .then(() => {
+      return renderOpacity({
+        opacity: opacity,
+        container: groupContainer
+      });
+    })
+    .then(() => {
+      return renderBlendMode({
+        blendMode: blendingMode,
+        container: groupContainer
+      });
     })
     .then(() => {
       return renderLayers({
         layers: layer.layers as srm.RelevantLayer[],
         resources: resources,
-        container: groupLayers,
+        container: groupContainer,
         groupShadows: compiledGroupShadows
       });
     })
     .then(() => {
-      groupContainer.addChild(groupLayers);
       if (name === 'srm.mask') {
-        groupLayers.mask = groupLayers.children[0] as PIXI.Container;
+        groupContainer.mask = groupContainer.children[0] as PIXI.Container;
       }
       return renderTransforms({
         layer: layer,

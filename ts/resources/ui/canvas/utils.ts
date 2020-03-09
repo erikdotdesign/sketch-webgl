@@ -19,8 +19,7 @@ export const borderPositionToAlignment = (sketchAlignment: string) => {
 };
 
 export const getBlendMode = (blendMode: srm.BlendingMode) => {
-  // IMPORTANT - The WebGL renderer only supports the NORMAL, ADD, MULTIPLY and SCREEN blend modes.
-  // Anything else will silently act like NORMAL.
+  // WebGL renderer only supports the NORMAL, ADD, MULTIPLY and SCREEN blend modes.
   switch(blendMode) {
     case 'Normal':
       return PIXI.BLEND_MODES.NORMAL;

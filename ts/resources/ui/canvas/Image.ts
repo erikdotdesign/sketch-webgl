@@ -1,15 +1,15 @@
 import * as PIXI from 'pixi.js';
 
-import {
-  setBaseLayerContainer,
-  renderGroupsShadows,
-  renderShadows,
-  renderFills,
-  renderInnerShadows,
-  renderBorders,
-  renderTransforms,
-  renderBlur
-} from './Style';
+import setLayerContainer from './style/layerContainer';
+import renderShadows from './style/shadows';
+import renderOpacity from './style/opacity';
+import renderBlendMode from './style/blendMode';
+import renderGroupsShadows from './style/groupShadows';
+import renderFills from './style/fills';
+import renderInnerShadows from './style/innerShadows';
+import renderBorders from './style/borders';
+import renderTransforms from './style/transforms';
+import renderBlur from './style/blur';
 
 interface RenderBaseImageFillOptions {
   layer: srm.Image;
@@ -39,12 +39,24 @@ interface RenderImageOptions {
 const renderImage = ({ layer, resources, groupShadows }: RenderImageOptions): Promise<PIXI.Container> => {
   return new Promise((resolve, reject) => {
     const { style, transform } = layer;
-    const { fills, borders, innerShadows, shadows, blur } = style;
+    const { fills, borders, innerShadows, shadows, blur, blendingMode, opacity } = style;
     const imageContainer = new PIXI.Container();
     imageContainer.name = layer.id;
-    setBaseLayerContainer({
+    setLayerContainer({
       layer: layer,
       container: imageContainer
+    })
+    .then(() => {
+      return renderOpacity({
+        opacity: opacity,
+        container: imageContainer
+      });
+    })
+    .then(() => {
+      return renderBlendMode({
+        blendMode: blendingMode,
+        container: imageContainer
+      });
     })
     .then(() => {
       return renderGroupsShadows({

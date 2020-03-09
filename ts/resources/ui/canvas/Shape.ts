@@ -1,17 +1,15 @@
 import * as PIXI from 'pixi.js';
 
-import {
-  setBaseLayerContainer,
-  setShapeLayerContainer,
-  renderGroupsShadows,
-  renderShadows,
-  renderFills,
-  renderInnerShadows,
-  renderBorders,
-  renderTransforms,
-  renderBlur
-} from './Style';
-
+import setLayerContainer from './style/layerContainer';
+import renderShadows from './style/shadows';
+import renderOpacity from './style/opacity';
+import renderBlendMode from './style/blendMode';
+import renderGroupsShadows from './style/groupShadows';
+import renderFills from './style/fills';
+import renderInnerShadows from './style/innerShadows';
+import renderBorders from './style/borders';
+import renderTransforms from './style/transforms';
+import renderBlur from './style/blur';
 import { getShapePartials } from './utils';
 
 interface RenderShapePartialOptions {
@@ -29,7 +27,7 @@ const renderShapePartial = ({ layer, borders, fills, groupShadows, shadows, inne
   return new Promise((resolve, reject) => {
     const shapePartialContainer = new PIXI.Container();
     shapePartialContainer.name = 'shape-partial';
-    setShapeLayerContainer({
+    setLayerContainer({
       layer: layer,
       container: shapePartialContainer
     })
@@ -114,13 +112,25 @@ interface RenderShapeOptions {
 const renderShape = ({ layer, resources, groupShadows }: RenderShapeOptions): Promise<PIXI.Container> => {
   return new Promise((resolve, reject) => {
     const { transform, style } = layer;
-    const { blur, shadows, innerShadows, fills, borders, blendingMode } = style;
+    const { blur, shadows, innerShadows, fills, borders, blendingMode, opacity } = style;
     const shapePartials = getShapePartials({shape: layer});
     const shapeContainer = new PIXI.Container();
     shapeContainer.name = layer.id;
-    setBaseLayerContainer({
+    setLayerContainer({
       layer: layer,
       container: shapeContainer
+    })
+    .then(() => {
+      return renderOpacity({
+        opacity: opacity,
+        container: shapeContainer
+      });
+    })
+    .then(() => {
+      return renderBlendMode({
+        blendMode: blendingMode,
+        container: shapeContainer
+      });
     })
     .then(() => {
       return renderShapePartials({

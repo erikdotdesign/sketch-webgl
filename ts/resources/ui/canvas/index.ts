@@ -34,14 +34,12 @@ const renderPixiCanvas = ({ sketchArtboard, base64Images, theme }: RenderPixiCan
     let resources: PIXI.LoaderResource[];
     let canvas: PIXI.Container;
     let artboard: PIXI.Container;
-    console.log('rendering app');
     // render app
     renderApp({
       theme: theme
     })
     // load resources
     .then((appContainer) => {
-      console.log('loading resources');
       app = appContainer;
       return loadResources({
         app: app,
@@ -50,7 +48,6 @@ const renderPixiCanvas = ({ sketchArtboard, base64Images, theme }: RenderPixiCan
     })
     // render canvas
     .then((appResources) => {
-      console.log('rendering canvas');
       resources = appResources;
       return renderCanvas({
         app: app
@@ -58,7 +55,6 @@ const renderPixiCanvas = ({ sketchArtboard, base64Images, theme }: RenderPixiCan
     })
     // render artboard
     .then((canvasContainer) => {
-      console.log('rendering artboard');
       canvas = canvasContainer;
       return renderArtboard({
         canvas: canvas,
@@ -67,7 +63,6 @@ const renderPixiCanvas = ({ sketchArtboard, base64Images, theme }: RenderPixiCan
     })
     // render artboard layers
     .then(artboardContainer => {
-      console.log('rendering layers');
       artboard = artboardContainer;
       return renderArtboardLayers({
         sketchArtboard: sketchArtboard,
@@ -77,24 +72,21 @@ const renderPixiCanvas = ({ sketchArtboard, base64Images, theme }: RenderPixiCan
     })
     // get initial zoom
     .then(() => {
-      console.log('setting initial zoom');
       return getInitialZoom({
         app: app
       });
     })
-    // set initial zoom
+    // set initial zoom (scale artboard to fit within viewport)
     .then((initialZoom) => {
-      const initialZoomEvent = new CustomEvent('InitialZoom', {
+      app.view.dispatchEvent(new CustomEvent('InitialZoom', {
         bubbles: true,
         detail: {
           initialZoom: initialZoom
         }
-      });
-      app.view.dispatchEvent(initialZoomEvent);
+      }));
     })
     // return app
     .finally(() => {
-      console.log('canvas built');
       resolve(app);
     });
   });

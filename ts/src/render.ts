@@ -112,7 +112,7 @@ export default (context: any) => {
     });
   } else {
     // if artboard not selected, alert user
-    ui.alert('Invalid Selection', 'Select an artboard to export.');
+    ui.alert('Invalid Selection', 'Select an artboard to render.');
   }
 }
 

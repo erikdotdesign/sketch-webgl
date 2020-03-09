@@ -1,9 +1,9 @@
-interface CheckIfMaskOptions {
+interface ProcessMaskOptions {
   layer: srm.RelevantLayer | null;
   sketch: srm.Sketch;
 }
 
-const checkIfMask = ({ layer, sketch }: CheckIfMaskOptions): Promise<srm.RelevantLayer | null> => {
+const processMask = ({ layer, sketch }: ProcessMaskOptions): Promise<srm.RelevantLayer | null> => {
   return new Promise((resolve, reject) => {
     if (layer && layer.sketchObject.hasClippingMask()) {
       const maskIndex = layer.index;
@@ -34,73 +34,174 @@ const checkIfMask = ({ layer, sketch }: CheckIfMaskOptions): Promise<srm.Relevan
   });
 };
 
-interface CheckIfShapePathOptions {
+const isPathClockwise = (points: srm.CurvePoint[]): boolean => {
+  let end = points.length - 1;
+  let sum = points[end].point.x * points[0].point.y - points[0].point.x * points[end].point.y;
+  for(let i = 0; i < end; i++) {
+    const n = i + 1;
+    sum += points[i].point.x * points[n].point.y - points[n].point.x * points[i].point.y;
+  }
+  return sum > 0;
+};
+
+interface FlattenShapePathOptions {
+  layer: srm.ShapePath;
+  sketch: srm.Sketch;
+}
+
+const flattenShapePath = ({ layer, sketch }: FlattenShapePathOptions): Promise<srm.ShapePath> => {
+  return new Promise((resolve, reject) => {
+    // due to the way PIXI draws lines
+    // the path must be clockwise to render correctly
+    const isClockwise = isPathClockwise((layer as srm.ShapePath).points);
+    if (!isClockwise) {
+      layer.sketchObject.reversePath();
+    }
+    const duplicate = layer.duplicate() as srm.ShapePath;
+    duplicate.transform.rotation = 0;
+    duplicate.transform.flippedHorizontally = false;
+    duplicate.transform.flippedVertically = false;
+    const svgPath = duplicate.getSVGPath();
+    const flatPath = sketch.ShapePath.fromSVGPath(svgPath);
+    (layer as srm.ShapePath).points = flatPath.points;
+    duplicate.remove();
+    resolve(layer);
+  });
+};
+
+interface ProcessShapePathBorderOptions {
+  layer: srm.ShapePath;
+}
+
+const processShapePathBorderOptions = ({ layer }: ProcessShapePathBorderOptions): Promise<srm.ShapePath | srm.Shape> => {
+  return new Promise((resolve, reject) => {
+    const { parent, index, style } = layer;
+    const { borderOptions } = style;
+    if (borderOptions.dashPattern.length > 0 || borderOptions.startArrowhead !== 'None' || borderOptions.endArrowhead !== 'None') {
+      layer.sketchObject.layersByConvertingToOutlines();
+      const outlines = parent.layers[index];
+      outlines.name = `[srm.with-border-options]${layer.name}`;
+      outlines.sketchObject.simplify();
+      resolve(outlines as srm.ShapePath | srm.Shape);
+    } else {
+      resolve(layer);
+    }
+  });
+};
+
+interface ProcessShapePathOptions {
   layer: srm.RelevantLayer | null;
   sketch: srm.Sketch;
 }
 
-const checkIfShapePath = ({ layer, sketch }: CheckIfShapePathOptions): Promise<srm.RelevantLayer | null> => {
+const processShapePath = ({ layer, sketch }: ProcessShapePathOptions): Promise<srm.RelevantLayer | null> => {
   return new Promise((resolve, reject) => {
     if (layer && layer.type === 'ShapePath') {
-      const { style, parent, index } = layer;
-      const { borderOptions } = style;
-      const duplicate = layer.duplicate() as srm.ShapePath;
-      duplicate.transform.rotation = 0;
-      duplicate.transform.flippedHorizontally = false;
-      duplicate.transform.flippedVertically = false;
-      const svgPath = duplicate.getSVGPath();
-      const flatPath = sketch.ShapePath.fromSVGPath(svgPath);
-      (layer as srm.ShapePath).points = flatPath.points;
-      duplicate.remove();
-      if (borderOptions.dashPattern.length > 0 || borderOptions.startArrowhead !== 'None' || borderOptions.endArrowhead !== 'None') {
-        layer.sketchObject.layersByConvertingToOutlines();
-        const outlines = parent.layers[index];
-        outlines.name = `[srm.with-border-options]${layer.name}`;
-        outlines.sketchObject.simplify();
-        resolve(outlines as srm.ShapePath | srm.Shape);
+      flattenShapePath({
+        layer: layer as srm.ShapePath,
+        sketch: sketch
+      })
+      .then((layerS1) => {
+        return processShapePathBorderOptions({
+          layer: layerS1
+        })
+      })
+      .then((layerS2) => {
+        resolve(layerS2);
+      });
+    } else {
+      resolve(layer);
+    }
+  });
+};
+
+// interface ProcessShapeLayersOptions {
+//   layer: srm.Shape;
+//   sketch: srm.Sketch;
+// }
+
+// const processShapeLayers = ({ layer, sketch }: ProcessShapeLayersOptions): Promise<srm.Shape> => {
+//   return new Promise((resolve, reject) => {
+//     const promises: Promise<srm.Shape | srm.ShapePath>[] = [];
+//     layer.layers.forEach((shapeLayer: srm.ShapePath | srm.Shape) => {
+//       switch(shapeLayer.type){
+//         case 'ShapePath':
+//           promises.push(processShapePath({
+//             layer: shapeLayer as srm.ShapePath,
+//             sketch: sketch
+//           }) as Promise<srm.ShapePath>);
+//           break;
+//         case 'Shape':
+//           promises.push(processShapeBase({
+//             layer: shapeLayer as srm.Shape
+//           }) as Promise<srm.Shape>);
+//           break;
+//       }
+//     });
+//     Promise.all(promises).then(() => {
+//       resolve(layer);
+//     });
+//   });
+// };
+
+interface ProcessShapeBaseOptions {
+  layer: srm.Shape;
+}
+
+const processShapeBase = ({ layer }: ProcessShapeBaseOptions): Promise<srm.Shape | srm.ShapePath> => {
+  return new Promise((resolve, reject) => {
+    const { style, parent, index } = layer;
+    if (layer.sketchObject.canFlatten()) {
+      layer.sketchObject.flatten();
+      resolve(parent.layers[index] as srm.Shape);
+    } else {
+      if ((layer as srm.Shape).layers.length === 1) {
+        layer.sketchObject.ungroup();
+        const ungrouped = parent.layers[index] as srm.RelevantLayer;
+        ungrouped.style = style;
+        resolve(ungrouped as srm.Shape | srm.ShapePath);
       } else {
         resolve(layer);
       }
-    } else {
-      resolve(layer);
     }
   });
 };
 
-interface CheckIfShapeOptions {
+interface ProcessShapeOptions {
   layer: srm.RelevantLayer | null;
   sketch: srm.Sketch;
-  page: srm.Page;
 }
 
-const checkIfShape = ({ layer, sketch, page }: CheckIfShapeOptions): Promise<srm.RelevantLayer | null> => {
+const processShape = ({ layer, sketch }: ProcessShapeOptions): Promise<srm.RelevantLayer | null> => {
   return new Promise((resolve, reject) => {
     if (layer && layer.type === 'Shape') {
-      const { style, parent, index } = layer;
-      if (layer.sketchObject.canFlatten()) {
-        layer.sketchObject.flatten();
-        resolve(parent.layers[index] as srm.Shape);
-      } else {
-        if ((layer as srm.Shape).layers.length === 1) {
-          layer.sketchObject.ungroup();
-          const ungrouped = parent.layers[index] as srm.RelevantLayer;
-          ungrouped.style = style;
-          resolve(ungrouped);
-        } else {
-          resolve(layer);
-        }
-      }
+      processShapeBase({
+        layer: layer as srm.Shape
+      })
+      // .then((layerS1) => {
+      //   if (layerS1.type === 'Shape') {
+      //     return processShapeLayers({
+      //       layer: layerS1 as srm.Shape,
+      //       sketch: sketch
+      //     });
+      //   } else {
+      //     resolve(layerS1);
+      //   }
+      // })
+      .then((layerS2) => {
+        resolve(layerS2);
+      });
     } else {
       resolve(layer);
     }
   });
 };
 
-interface CheckIfRelevantOptions {
+interface ProcessRelevantOptions {
   layer: srm.ArtboardLayer;
 }
 
-const checkIfRelevant = ({ layer }: CheckIfRelevantOptions): Promise<srm.RelevantLayer | srm.SymbolInstance | null> => {
+const processRelevant = ({ layer }: ProcessRelevantOptions): Promise<srm.RelevantLayer | srm.SymbolInstance | null> => {
   return new Promise((resolve, reject) => {
     switch(layer.type) {
       case 'Group':
@@ -120,11 +221,11 @@ const checkIfRelevant = ({ layer }: CheckIfRelevantOptions): Promise<srm.Relevan
   });
 };
 
-interface CheckIfHiddenOptions {
+interface ProcessHiddenOptions {
   layer: srm.RelevantLayer | srm.SymbolInstance | null;
 }
 
-const checkIfHidden = ({ layer }: CheckIfHiddenOptions): Promise<srm.RelevantLayer | srm.SymbolInstance | null> => {
+const processHidden = ({ layer }: ProcessHiddenOptions): Promise<srm.RelevantLayer | srm.SymbolInstance | null> => {
   return new Promise((resolve, reject) => {
     const isHidden = layer && (<srm.RelevantLayer | srm.SymbolInstance>layer).hidden;
     if (isHidden) {
@@ -136,11 +237,11 @@ const checkIfHidden = ({ layer }: CheckIfHiddenOptions): Promise<srm.RelevantLay
   });
 };
 
-interface CheckIfSymbolOptions {
+interface ProcessSymbolOptions {
   layer: srm.RelevantLayer | srm.SymbolInstance | null;
 }
 
-const checkIfSymbol = ({ layer }: CheckIfSymbolOptions): Promise<srm.RelevantLayer | null> => {
+const processSymbol = ({ layer }: ProcessSymbolOptions): Promise<srm.RelevantLayer | null> => {
   return new Promise((resolve, reject) => {
     if (layer && layer.type === 'SymbolInstance') {
       resolve((<srm.SymbolInstance>layer).detach({
@@ -152,12 +253,12 @@ const checkIfSymbol = ({ layer }: CheckIfSymbolOptions): Promise<srm.RelevantLay
   });
 };
 
-interface CheckIfTextOptions {
+interface ProcessTextOptions {
   layer: srm.RelevantLayer | null;
   sketch: srm.Sketch;
 }
 
-const checkIfText = ({ layer, sketch }: CheckIfTextOptions): Promise<srm.RelevantLayer | null> => {
+const processText = ({ layer, sketch }: ProcessTextOptions): Promise<srm.RelevantLayer | null> => {
   return new Promise((resolve, reject) => {
     if (layer && layer.type === 'Text') {
       if ((layer as srm.Text).text.trim().length === 0) {
@@ -181,21 +282,21 @@ const checkIfText = ({ layer, sketch }: CheckIfTextOptions): Promise<srm.Relevan
   });
 };
 
-interface RoundFrameDimensionsOptions {
-  layer: srm.RelevantLayer | null;
-}
+// interface RoundFrameDimensionsOptions {
+//   layer: srm.RelevantLayer | null;
+// }
 
-const roundFrameDimensions = ({ layer }: RoundFrameDimensionsOptions): Promise<srm.RelevantLayer | null> => {
-  return new Promise((resolve, reject) => {
-    if (layer) {
-      layer.frame.x = Math.round(layer.frame.x);
-      layer.frame.y = Math.round(layer.frame.y);
-      layer.frame.width = Math.round(layer.frame.width);
-      layer.frame.height = Math.round(layer.frame.height);
-    }
-    resolve(layer);
-  });
-};
+// const roundFrameDimensions = ({ layer }: RoundFrameDimensionsOptions): Promise<srm.RelevantLayer | null> => {
+//   return new Promise((resolve, reject) => {
+//     if (layer) {
+//       layer.frame.x = Math.round(layer.frame.x);
+//       layer.frame.y = Math.round(layer.frame.y);
+//       layer.frame.width = Math.round(layer.frame.width);
+//       layer.frame.height = Math.round(layer.frame.height);
+//     }
+//     resolve(layer);
+//   });
+// };
 
 interface ProcessLayerOptions {
   layer: srm.ArtboardLayer;
@@ -205,40 +306,39 @@ interface ProcessLayerOptions {
 
 const processLayer = ({ layer, sketch, page }: ProcessLayerOptions): Promise<srm.RelevantLayer> => {
   return new Promise((resolve, reject) => {
-    checkIfRelevant({
+    processRelevant({
       layer: layer
     })
     .then((layerS1) => {
-      return checkIfHidden({
+      return processHidden({
         layer: layerS1 as srm.RelevantLayer | srm.SymbolInstance | null
       });
     })
     .then((layerS2) => {
-      return checkIfSymbol({
+      return processSymbol({
         layer: layerS2 as srm.RelevantLayer | null
       });
     })
     .then((layerS3) => {
-      return checkIfShape({
+      return processShape({
         layer: layerS3 as srm.RelevantLayer | null,
-        sketch: sketch,
-        page: page
+        sketch: sketch
       });
     })
     .then((layerS4) => {
-      return checkIfShapePath({
+      return processShapePath({
         layer: layerS4 as srm.RelevantLayer | null,
         sketch: sketch
       });
     })
     .then((layerS5) => {
-      return checkIfMask({
+      return processMask({
         layer: layerS5 as srm.RelevantLayer | null,
         sketch: sketch
       });
     })
     .then((layerS6) => {
-      return checkIfText({
+      return processText({
         layer: layerS6 as srm.RelevantLayer | null,
         sketch: sketch
       });

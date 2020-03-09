@@ -77,7 +77,7 @@ export default (context) => {
                 // set plugin store && update loading text
                 .then((appStore) => {
                 store = appStore;
-                return loadingWebContents.executeJavaScript(`setLoadingText('Rendering', 'Building spec')`);
+                return loadingWebContents.executeJavaScript(`setLoadingText('Rendering', 'Drawing canvas')`);
             })
                 // maximize app window size && render app
                 .then(() => {
@@ -105,7 +105,7 @@ export default (context) => {
     }
     else {
         // if artboard not selected, alert user
-        ui.alert('Invalid Selection', 'Select an artboard to export.');
+        ui.alert('Invalid Selection', 'Select an artboard to render.');
     }
 };
 export const onShutdown = () => {

@@ -82,7 +82,7 @@ export default (context: any) => {
       .then((appStore) => {
         store = appStore;
         return loadingWebContents.executeJavaScript(
-          `setLoadingText('Rendering', 'Building spec')`
+          `setLoadingText('Rendering', 'Drawing canvas')`
         );
       })
       // maximize app window size && render app

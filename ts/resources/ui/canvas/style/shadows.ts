@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { colorToFill, getCompiledBorderThickness } from '../utils';
+import { colorToFill, getThickestInnerBorder, getThickestOuterBorder, borderPositionToAlignment } from '../utils';
 import renderLayerShape from './layerShape';
 import renderOpacity from './opacity';
 
@@ -12,6 +12,10 @@ interface RenderShadowOptions {
 
 export const renderShadow = ({ layer, shadow, shadowIndex, container }: RenderShadowOptions): Promise<PIXI.Container> => {
   return new Promise((resolve, reject) => {
+    const layerFills = layer.type === 'ShapePartial' ? (layer as srm.ShapePartial).shape.style.fills : layer.style.fills;
+    const layerBorders = layer.type === 'ShapePartial' ? (layer as srm.ShapePartial).shape.style.borders : layer.style.borders;
+    const activeFills = layerFills.some(fill => fill.enabled);
+    const activeBorders = layerBorders.some(border => border.enabled);
     const shadowStyles = colorToFill(shadow.color);
     const shadowGraphic = new PIXI.Graphics();
     shadowGraphic.name = `shadow-${shadowIndex}`;
@@ -22,9 +26,20 @@ export const renderShadow = ({ layer, shadow, shadowIndex, container }: RenderSh
       container: shadowGraphic
     })
     .then(() => {
-      return renderShadowBase({
+      return renderShadowFill({
         layer: layer,
-        shadowStyles: shadowStyles,
+        activeFills: activeFills,
+        shadowColor: shadowStyles.color,
+        shadowGraphic: shadowGraphic
+      });
+    })
+    .then(() => {
+      return renderShadowBorders({
+        layer: layer,
+        activeBorders: activeBorders,
+        activeFills: activeFills,
+        borders: layerBorders,
+        shadowColor: shadowStyles.color,
         shadowSpread: shadow.spread,
         shadowGraphic: shadowGraphic
       });
@@ -44,27 +59,58 @@ export const renderShadow = ({ layer, shadow, shadowIndex, container }: RenderSh
   });
 };
 
-interface RenderShadowBaseOptions {
+interface RenderShadowBordersOptions {
   layer: srm.ShapePath | srm.Image | srm.ShapePartial;
-  shadowStyles: {color: number, alpha: number};
+  activeFills: boolean;
+  activeBorders: boolean;
+  borders: srm.Border[];
+  shadowColor: number;
   shadowSpread: number;
   shadowGraphic: PIXI.Graphics;
 }
 
-const renderShadowBase = ({ layer, shadowStyles, shadowSpread, shadowGraphic }: RenderShadowBaseOptions): Promise<PIXI.Graphics> => {
+const renderShadowBorders = ({ layer, activeFills, activeBorders, borders, shadowColor, shadowSpread, shadowGraphic }: RenderShadowBordersOptions): Promise<PIXI.Graphics> => {
   return new Promise((resolve, reject) => {
-    const layerFills = layer.type === 'ShapePartial' ? (layer as srm.ShapePartial).shape.style.fills : layer.style.fills;
-    const layerBorders = layer.type === 'ShapePartial' ? (layer as srm.ShapePartial).shape.style.borders : layer.style.borders
-    const activeFills = layerFills.some(fill => fill.enabled);
-    const activeBorders = layerBorders.some(border => border.enabled);
-    const borderSize = getCompiledBorderThickness(layerBorders);
-    if (activeFills || !activeBorders || layer.type === 'Image') {
-      shadowGraphic.beginFill(shadowStyles.color, 1);
-      shadowGraphic.lineStyle(borderSize / 2 + shadowSpread, shadowStyles.color, 1, 1);
+    if (activeBorders || shadowSpread > 0) {
+      const thickestInnerBorder = getThickestInnerBorder(borders);
+      const thickestOuterBorder = getThickestOuterBorder(borders);
+      renderShadowBorder({
+        layer: layer,
+        borderThickness: thickestInnerBorder + (activeFills ? shadowSpread : (shadowSpread / 2)),
+        borderPosition: 0,
+        shadowColor: shadowColor,
+        shadowGraphic: shadowGraphic
+      })
+      .then(() => {
+        return renderShadowBorder({
+          layer: layer,
+          borderThickness: thickestOuterBorder + (activeFills ? shadowSpread : (shadowSpread / 2)),
+          borderPosition: 1,
+          shadowColor: shadowColor,
+          shadowGraphic: shadowGraphic
+        });
+      })
+      .finally(() => {
+        resolve(shadowGraphic);
+      });
     } else {
-      shadowGraphic.beginFill(shadowStyles.color, 0.001);
-      shadowGraphic.lineStyle(borderSize + shadowSpread, shadowStyles.color);
+      resolve(shadowGraphic);
     }
+  });
+};
+
+interface RenderShadowBorderOptions {
+  layer: srm.ShapePath | srm.Image | srm.ShapePartial;
+  borderThickness: number;
+  borderPosition: number;
+  shadowColor: number;
+  shadowGraphic: PIXI.Graphics;
+}
+
+const renderShadowBorder = ({ layer, borderThickness, borderPosition, shadowColor, shadowGraphic }: RenderShadowBorderOptions): Promise<PIXI.Graphics> => {
+  return new Promise((resolve, reject) => {
+    shadowGraphic.beginFill(shadowColor, 0.001);
+    shadowGraphic.lineStyle(borderThickness, shadowColor, 1, borderPosition);
     renderLayerShape({
       layer: layer,
       graphic: shadowGraphic
@@ -75,6 +121,33 @@ const renderShadowBase = ({ layer, shadowStyles, shadowSpread, shadowGraphic }: 
     .finally(() => {
       resolve(shadowGraphic);
     });
+  });
+};
+
+interface RenderShadowFillOptions {
+  layer: srm.ShapePath | srm.Image | srm.ShapePartial;
+  activeFills: boolean;
+  shadowColor: number;
+  shadowGraphic: PIXI.Graphics;
+}
+
+const renderShadowFill = ({ layer, activeFills, shadowColor, shadowGraphic }: RenderShadowFillOptions): Promise<PIXI.Graphics> => {
+  return new Promise((resolve, reject) => {
+    if (activeFills) {
+      shadowGraphic.beginFill(shadowColor, 1);
+      renderLayerShape({
+        layer: layer,
+        graphic: shadowGraphic
+      })
+      .then(() => {
+        shadowGraphic.endFill();
+      })
+      .finally(() => {
+        resolve(shadowGraphic);
+      });
+    } else {
+      resolve(shadowGraphic);
+    }
   });
 };
 

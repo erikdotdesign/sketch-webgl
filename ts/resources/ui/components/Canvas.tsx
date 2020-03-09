@@ -5,7 +5,7 @@ import renderPixiCanvas from '../canvas';
 const Canvas = () => {
   const [pixiApp, setPixiApp] = useState<PIXI.Application | null>(null);
   const globalState = useContext(store);
-  const { dispatch, theme, artboard, base64Images, zoom } = globalState;
+  const { theme, artboard, base64Images } = globalState;
   const canvas = useRef<HTMLDivElement>(null);
 
   const handleResize = () => {
@@ -16,7 +16,7 @@ const Canvas = () => {
 
   useEffect(() => {
     window.addEventListener('resize', handleResize);
-    canvas.current?.addEventListener("wheel", function(event){
+    canvas.current?.addEventListener('wheel', function(event){
       event.preventDefault();
     });
     renderPixiCanvas({

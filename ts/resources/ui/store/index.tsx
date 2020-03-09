@@ -1,7 +1,6 @@
 import React, {createContext, useReducer} from 'react';
 import reducers from './reducers';
-import getTheme, { SRM_DEFAULT_PRIMARY } from './theme';
-import { Color } from 'chroma-js';
+import getTheme from './theme';
 
 interface StateProviderProps {
   children: React.ReactNode
@@ -12,8 +11,6 @@ interface appState {
   theme: any;
   artboard: srm.Artboard | null;
   base64Images: srm.base64Image[];
-  zoom: number;
-  baseZoom: number;
   dispatch: any;
 }
 
@@ -22,8 +19,6 @@ const initialState: appState = {
   theme: getTheme('dark'),
   artboard: null,
   base64Images: [],
-  zoom: 1,
-  baseZoom: 1,
   dispatch: () => {}
 };
 

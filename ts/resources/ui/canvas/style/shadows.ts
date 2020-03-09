@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { colorToFill, getThickestInnerBorder, getThickestOuterBorder, borderPositionToAlignment } from '../utils';
+import { colorToFill, getThickestInnerBorder, getThickestOuterBorder } from '../utils';
 import renderLayerShape from './layerShape';
 import renderOpacity from './opacity';
 
@@ -109,6 +109,7 @@ interface RenderShadowBorderOptions {
 
 const renderShadowBorder = ({ layer, borderThickness, borderPosition, shadowColor, shadowGraphic }: RenderShadowBorderOptions): Promise<PIXI.Graphics> => {
   return new Promise((resolve, reject) => {
+    // PIXI wont render holes unless there is a fill
     shadowGraphic.beginFill(shadowColor, 0.001);
     shadowGraphic.lineStyle(borderThickness, shadowColor, 1, borderPosition);
     renderLayerShape({

@@ -173,7 +173,8 @@ interface CreatePatternFillImageOptions {
 
 const createPatternFillImage = ({ page, layer, pattern, fillOpacity, sketch, prefix }: CreatePatternFillImageOptions): Promise<srm.base64Image> => {
   return new Promise((resolve, reject) => {
-    // create image from fill pattern image
+    // create new layer with pattern
+    // add transparent border to include any layer whitespace
     const patternImage = new sketch.ShapePath({
       parent: page,
       frame: layer.frame,
@@ -181,15 +182,16 @@ const createPatternFillImage = ({ page, layer, pattern, fillOpacity, sketch, pre
         fills: [{
           fillType: 'Pattern',
           pattern: pattern
-        }, {
+        }],
+        borders: [{
           fillType: 'Color',
+          position: 'Inside',
           color: '#00000001'
         }],
-        borders: [],
         opacity: fillOpacity
       }
     });
-    // generate base64 image from image layer
+    // generate base64 image from layer
     generateImageAsset({
       layer: patternImage,
       sketch: sketch,

@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { colorToFill, borderPositionToAlignment } from '../utils';
+import { colorToFill, getBorderTexture, borderPositionToAlignment } from '../utils';
 import renderLayerShape from './layerShape';
 import renderOpacity from './opacity';
 
@@ -50,21 +50,14 @@ interface RenderBorderGradientOptions {
 
 const renderBorderGradient = ({ layer, border, borderIndex, resources, container }: RenderBorderGradientOptions): Promise<PIXI.Container> => {
   return new Promise((resolve, reject) => {
+    const borderTexture = getBorderTexture({layer, borderIndex, resources, borderPosition: border.position});
     const borderGradient = new PIXI.Graphics();
     borderGradient.name = `border-${borderIndex}`;
-    let gradientTexture;
-    if (layer.type === 'ShapePartial') {
-      const baseTexture = new PIXI.BaseTexture(resources[`[border-${borderIndex}]${(layer as srm.ShapePartial).shape.id}` as any].url);
-      const frame = new PIXI.Rectangle(layer.frame.x - layer.frame.width, layer.frame.y - layer.frame.height, layer.frame.width, layer.frame.height);
-      gradientTexture = new PIXI.Texture(baseTexture, frame);
-    } else {
-      gradientTexture = PIXI.Texture.from(resources[`[border-${borderIndex}]${layer.id}` as any].url);
-    }
     // hole borders wont render unless there is a fill
     borderGradient.beginFill(0x000000, 0.001);
     borderGradient.lineTextureStyle({
       width: border.thickness,
-      texture: gradientTexture,
+      texture: borderTexture,
       alignment: borderPositionToAlignment(border.position)
     });
     renderLayerShape({

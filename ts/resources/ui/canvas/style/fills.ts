@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { colorToFill } from '../utils';
+import { colorToFill, getFillTexture } from '../utils';
 import renderLayerShape from './layerShape';
 
 interface RenderFillColorOptions {
@@ -28,7 +28,7 @@ const renderFillColor = ({ layer, fill, fillIndex, container }: RenderFillColorO
 };
 
 interface RenderFillImageOptions {
-  layer: srm.ShapePath | srm.Image | srm.ShapePartial | srm.Text;
+  layer: srm.ShapePath | srm.Image | srm.ShapePartial;
   fillIndex: number;
   resources: PIXI.LoaderResource[];
   container: PIXI.Container;
@@ -36,16 +36,9 @@ interface RenderFillImageOptions {
 
 const renderFillImage = ({ layer, fillIndex, resources, container }: RenderFillImageOptions): Promise<PIXI.Container> => {
   return new Promise((resolve, reject) => {
+    const fillTexture = getFillTexture({layer, fillIndex, resources});
     const fillImage = new PIXI.Graphics();
     fillImage.name = `fill-${fillIndex}`;
-    let fillTexture;
-    if (layer.type === 'ShapePartial') {
-      const baseTexture = new PIXI.BaseTexture(resources[`[fill-${fillIndex}]${(layer as srm.ShapePartial).shape.id}` as any].url);
-      const frame = new PIXI.Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height);
-      fillTexture = new PIXI.Texture(baseTexture, frame);
-    } else {
-      fillTexture = PIXI.Texture.from(resources[`[fill-${fillIndex}]${layer.id}` as any].url);
-    }
     fillImage.beginTextureFill({texture: fillTexture});
     renderLayerShape({
       layer: layer,
@@ -60,7 +53,7 @@ const renderFillImage = ({ layer, fillIndex, resources, container }: RenderFillI
 };
 
 interface RenderFillOptions {
-  layer: srm.ShapePath | srm.Image | srm.ShapePartial | srm.Text;
+  layer: srm.ShapePath | srm.Image | srm.ShapePartial;
   fill: srm.Fill;
   fillIndex: number;
   resources: PIXI.LoaderResource[];
@@ -98,7 +91,7 @@ const renderFill = ({ layer, fill, fillIndex, resources, container }: RenderFill
 };
 
 interface RenderFillsOptions {
-  layer: srm.ShapePath | srm.Image | srm.ShapePartial | srm.Text;
+  layer: srm.ShapePath | srm.Image | srm.ShapePartial;
   fills: srm.Fill[];
   resources: PIXI.LoaderResource[];
   container: PIXI.Container;

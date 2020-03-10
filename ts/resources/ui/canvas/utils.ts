@@ -199,3 +199,95 @@ export const getShapePartials = ({ shape }: GetShapePartialsOptions): srm.ShapeP
   });
   return shapePaths;
 };
+
+interface GetFitRatioOptions {
+  layerWidth: number;
+  layerHeight: number;
+  containerWidth: number;
+  containerHeight: number;
+}
+
+export const getFitRatio = ({ layerWidth, layerHeight, containerWidth, containerHeight }: GetFitRatioOptions): any => {
+  return new Promise((resolve, reject) => {
+    const maxWidth: number = Math.min(containerWidth, layerWidth);
+    const maxHeight: number = Math.min(containerHeight, layerHeight);
+    const maxRatio: number = maxWidth / maxHeight;
+    const layerRatio: number = layerWidth / layerHeight;
+    if (maxRatio > layerRatio) {
+      // height is the constraining dimension
+      resolve(maxHeight / layerHeight);
+    } else {
+      // width is the constraining dimension
+      resolve(maxWidth / layerWidth);
+    }
+  })
+};
+
+interface GetFillResourceOptions {
+  layer: srm.ShapePath | srm.Image | srm.ShapePartial;
+  fillIndex: number;
+  resources: PIXI.LoaderResource[];
+}
+
+export const getFillResource = ({ layer, fillIndex, resources }: GetFillResourceOptions): any => {
+  if (layer.type === 'ShapePartial') {
+    return resources[`[fill-${fillIndex}]${(layer as srm.ShapePartial).shape.id}` as any]
+  } else {
+    return resources[`[fill-${fillIndex}]${layer.id}` as any];
+  }
+};
+
+interface GetBorderResourceOptions {
+  layer: srm.ShapePath | srm.Image | srm.ShapePartial;
+  borderIndex: number;
+  resources: PIXI.LoaderResource[];
+}
+
+export const getBorderResource = ({ layer, borderIndex, resources }: GetBorderResourceOptions): any => {
+  if (layer.type === 'ShapePartial') {
+    return resources[`[border-${borderIndex}]${(layer as srm.ShapePartial).shape.id}` as any]
+  } else {
+    return resources[`[border-${borderIndex}]${layer.id}` as any];
+  }
+};
+
+interface GetFillTextureOptions {
+  layer: srm.ShapePath | srm.Image | srm.ShapePartial;
+  fillIndex: number;
+  resources: PIXI.LoaderResource[];
+}
+
+export const getFillTexture = ({ layer, fillIndex, resources }: GetFillTextureOptions): any => {
+  const fillResource = getFillResource({layer, fillIndex, resources});
+  if (layer.type === 'ShapePartial') {
+    const baseTexture = new PIXI.BaseTexture(fillResource.url);
+    const frame = new PIXI.Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height);
+    return new PIXI.Texture(baseTexture, frame);
+  } else {
+    return PIXI.Texture.from(fillResource.url);
+  }
+};
+
+interface GetBorderTextureOptions {
+  layer: srm.ShapePath | srm.Image | srm.ShapePartial;
+  borderPosition: srm.BorderPosition;
+  borderIndex: number;
+  resources: PIXI.LoaderResource[];
+}
+
+export const getBorderTexture = ({ layer, borderIndex, borderPosition, resources }: GetBorderTextureOptions): any => {
+  const borderResource = getBorderResource({layer, borderIndex, resources});
+  if (layer.type === 'ShapePartial') {
+    const baseTexture = new PIXI.BaseTexture(borderResource.url);
+    let frame: PIXI.Rectangle;
+    // idk why this happens but it does
+    if (borderPosition === 'Inside') {
+      frame = new PIXI.Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height);
+    } else {
+      frame = new PIXI.Rectangle(layer.frame.x - layer.frame.width, layer.frame.y - layer.frame.height, layer.frame.width, layer.frame.height);
+    }
+    return new PIXI.Texture(baseTexture, frame);
+  } else {
+    return PIXI.Texture.from(borderResource.url);
+  }
+};

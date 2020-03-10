@@ -68,6 +68,60 @@ export const generateImageAsset = ({ layer, sketch, id, prefix, scale }: Generat
   })
 };
 
+interface CreateGradientBorderImageOptions {
+  page: srm.Page;
+  layer: srm.Shape | srm.ShapePath | srm.Image | srm.Text;
+  border: srm.Border;
+  gradientOpacity: number;
+  sketch: srm.Sketch;
+  prefix?: string;
+}
+
+const createGradientBorderImage = ({ page, layer, border, gradientOpacity, sketch, prefix }: CreateGradientBorderImageOptions): Promise<srm.base64Image> => {
+  return new Promise((resolve, reject) => {
+    const padding = (): number => {
+      switch(border.position) {
+        case 'Outside':
+          return border.thickness;
+        case 'Center':
+          return border.thickness / 2;
+        case 'Inside':
+          return 0;
+      }
+    };
+    // create new layer with gradient
+    const gradientImage = new sketch.ShapePath({
+      parent: page,
+      frame: {
+        ...layer.frame,
+        width: layer.frame.width + padding(),
+        height: layer.frame.height + padding()
+      },
+      style: {
+        fills: [{
+          fillType: 'Gradient',
+          gradient: border.gradient
+        }],
+        borders: [],
+        opacity: gradientOpacity
+      }
+    });
+    // export image to temp dir
+    generateImageAsset({
+      layer: gradientImage,
+      sketch: sketch,
+      id: layer.id,
+      prefix: prefix
+    })
+    .then((imageAsset) => {
+      // remove image from page
+      gradientImage.remove();
+      // return final image
+      resolve(imageAsset);
+    });
+  });
+};
+
 interface CreateGradientFillImageOptions {
   page: srm.Page;
   layer: srm.Shape | srm.ShapePath | srm.Image | srm.Text;
@@ -120,24 +174,31 @@ interface CreatePatternFillImageOptions {
 const createPatternFillImage = ({ page, layer, pattern, fillOpacity, sketch, prefix }: CreatePatternFillImageOptions): Promise<srm.base64Image> => {
   return new Promise((resolve, reject) => {
     // create image from fill pattern image
-    const fillImage = new sketch.Image({
-      image: pattern.image,
+    const patternImage = new sketch.ShapePath({
       parent: page,
       frame: layer.frame,
       style: {
+        fills: [{
+          fillType: 'Pattern',
+          pattern: pattern
+        }, {
+          fillType: 'Color',
+          color: '#00000001'
+        }],
+        borders: [],
         opacity: fillOpacity
       }
     });
     // generate base64 image from image layer
     generateImageAsset({
-      layer: fillImage,
+      layer: patternImage,
       sketch: sketch,
       id: layer.id,
       prefix: prefix
     })
     .then((imageAsset) => {
       // remove image from page
-      fillImage.remove();
+      patternImage.remove();
       // return final base64 image
       resolve(imageAsset);
     });
@@ -154,10 +215,10 @@ interface ProcessLayerBorderGradient {
 
 const processLayerBorderGradient = ({ page, layer, border, borderIndex, sketch }: ProcessLayerBorderGradient): Promise<srm.base64Image> => {
   return new Promise((resolve, reject) => {
-    createGradientFillImage({
+    createGradientBorderImage({
       page: page,
       layer: layer,
-      gradient: border.gradient,
+      border: border,
       gradientOpacity: border.sketchObject.contextSettings().opacity(),
       sketch: sketch,
       prefix: `[border-${borderIndex}]`

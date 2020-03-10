@@ -28,7 +28,7 @@ const renderBaseImageFill = ({ layer, resources, container }: RenderBaseImageFil
     container.addChild(baseImage);
     resolve(container);
   });
-}
+};
 
 interface RenderImageOptions {
   layer: srm.Image;

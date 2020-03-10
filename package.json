@@ -4,6 +4,7 @@
   "engines": {
     "sketch": ">=61.2"
   },
+  "repository": "https://github.com/endswithak/sketch-webgl",
   "skpm": {
     "name": "sketch-webgl",
     "manifest": "src/manifest.json",

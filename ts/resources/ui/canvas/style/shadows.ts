@@ -134,7 +134,7 @@ interface RenderShadowFillOptions {
 
 const renderShadowFill = ({ layer, activeFills, shadowColor, shadowGraphic }: RenderShadowFillOptions): Promise<PIXI.Graphics> => {
   return new Promise((resolve, reject) => {
-    if (activeFills) {
+    if (activeFills || layer.type === 'Image') {
       shadowGraphic.beginFill(shadowColor, 1);
       renderLayerShape({
         layer: layer,

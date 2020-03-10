@@ -19,12 +19,8 @@ interface RenderBaseImageFillOptions {
 
 const renderBaseImageFill = ({ layer, resources, container }: RenderBaseImageFillOptions) => {
   return new Promise((resolve, reject) => {
-    const baseImage = new PIXI.Graphics();
+    const baseImage = PIXI.Sprite.from(resources[`[image]${layer.id}` as any].url);
     baseImage.name = 'image';
-    const baseImageResource = PIXI.Texture.from(resources[`[image]${layer.id}` as any].url);
-    baseImage.beginTextureFill({texture: baseImageResource});
-    baseImage.drawRect(0, 0, layer.frame.width, layer.frame.height);
-    baseImage.endFill();
     container.addChild(baseImage);
     resolve(container);
   });

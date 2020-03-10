@@ -1,6 +1,10 @@
 {
-  "compatibleVersion": 3,
-  "bundleVersion": 1,
+  "name": "Sketch WebGL",
+  "author": "erik.design",
+  "description": "Renders your designs to HTML Canvas with WebGL.",
+  "icon": "icon.png",
+  "compatibleVersion": "61.2",
+  "bundleVersion": "1.0.0",
   "commands": [
     {
       "name": "render",
